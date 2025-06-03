@@ -42,7 +42,7 @@
         
         .side-panel {
             width: 200px;
-            background-color: var(--felt-green);
+            background-color: #4A2574;
             padding: 10px;
             border-radius: 8px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
@@ -52,10 +52,6 @@
             height: fit-content;
             box-sizing: border-box;
             transition: background-color 0.3s ease;
-        }
-        
-        .side-panel:hover {
-            background-color: var(--felt-green-dark);
         }
         
         .side-panel.expanded {
@@ -314,6 +310,46 @@
             color: var(--gold-accent);
             font-family: monospace;
         }
+
+        #chat-container {
+            display: none;
+        }
+
+        .master-message {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .user-message {
+            display: flex;
+            gap: 2rem;
+            flex-direction: row-reverse;
+
+        }
+
+        .sender-name {
+            width: 15rem;
+            padding: 1rem;
+            border: 2px solid var(--gold-accent);
+            border-radius: 2%;
+            background: var(--dark-wood);
+            text-align: center;
+            align-self: center;
+        }
+        
+        .bubble-message {
+            color: var(--dark-wood);
+            font-weight: 600;
+            width: 100%;
+            background-color: var(--cream);
+            border: 2px solid var(--gold-accent);
+            padding: 1rem;
+            font-style: italic;
+        }
+
+        #stt {
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -382,12 +418,18 @@
             </div>
             
             <div id="status"></div>
-            <div class="video-card-container">
-                <div id="videoContainer">
-                    <canvas id="canvas"></canvas>
+
+            <div id="chat-container">
+                <div class="master-message">
+                    <div class="sender-name">Dungeon Master</div>
+                    <div id="stt-master" class="bubble-message">Welcome! Try saying "Roll a six sided dice!" or "Roll a four sided dice!" to roll the dice!</div>
                 </div>
-                <div id="cardContainer">
-                    <img id="cardImage" src="https://deckofcardsapi.com/static/img/back.png" alt="Card back">
+
+                <br />
+
+                <div class="user-message">
+                    <div class="sender-name">You</div>
+                    <div id="stt" class="bubble-message">(Say something!)</div>
                 </div>
             </div>
         </div>
@@ -399,21 +441,19 @@
         const personaIdInput = document.getElementById('personaId');
         const createConversationBtn = document.getElementById('createConversation');
         const statusDiv = document.getElementById('status');
-        const videoContainer = document.getElementById('videoContainer');
-        const cardContainer = document.getElementById('cardContainer');
-        const cardImage = document.getElementById('cardImage');
-        const canvas = document.getElementById('canvas');
+        const chatContainer = document.getElementById('chat-container');
+        const chatMasterContainer = document.getElementById('stt-master');
         
         // Persona ID from the input field
         let PERSONA_ID = 'p0ca29dfb766';
         const CARD_BACK_URL = 'https://deckofcardsapi.com/static/img/back.png';
         
         // Create hidden video element for greenscreen processing
-        const video = document.createElement('video');
-        video.autoplay = true;
-        video.playsInline = true;
-        video.style.display = 'none';
-        document.body.appendChild(video);
+        // const video = document.createElement('video');
+        // video.autoplay = true;
+        // video.playsInline = true;
+        // video.style.display = 'none';
+        // document.body.appendChild(video);
         
         // Update persona ID when input changes
         personaIdInput.addEventListener('change', () => {
@@ -493,8 +533,8 @@
                     userName: "Local" // Specify the name of the joining participant
                 });
                 
-                videoContainer.style.display = 'block';
-                cardContainer.style.display = 'block';
+                // videoContainer.style.display = 'block';
+                // cardContainer.style.display = 'block';
                 showStatus('Joined call successfully! Waiting for participants...');
                 
                 // Add a delay before checking for participants
@@ -507,76 +547,76 @@
         }
         
         // Function to apply chroma key transparency using Canvas 2D
-        function applyGreenScreen() {
-            const ctx = canvas.getContext('2d');
+        // function applyGreenScreen() {
+        //     const ctx = canvas.getContext('2d');
             
-            // Set canvas dimensions to match video
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+        //     // Set canvas dimensions to match video
+        //     canvas.width = video.videoWidth;
+        //     canvas.height = video.videoHeight;
             
-            // Instead of using an image for the canvas background,
-            // we'll set the canvas background to be transparent
-            // and rely on the container's background image
-            canvas.style.background = 'transparent';
-            videoContainer.style.backgroundImage = "url('https://img.goodfon.com/original/1920x1080/2/19/dungeons-dragons-curse-of-strahd-podzemelia-i-drakony-nastol.jpg')";
-            videoContainer.style.backgroundSize = 'cover';
-            videoContainer.style.backgroundPosition = 'center';
+        //     // Instead of using an image for the canvas background,
+        //     // we'll set the canvas background to be transparent
+        //     // and rely on the container's background image
+        //     canvas.style.background = 'transparent';
+        //     videoContainer.style.backgroundImage = "url('https://img.goodfon.com/original/1920x1080/2/19/dungeons-dragons-curse-of-strahd-podzemelia-i-drakony-nastol.jpg')";
+        //     videoContainer.style.backgroundSize = 'cover';
+        //     videoContainer.style.backgroundPosition = 'center';
             
-            function renderFrame() {
-                // Only process if video is playing and has dimensions
-                if (video.paused || video.ended || !video.videoWidth) {
-                    requestAnimationFrame(renderFrame);
-                    return;
-                }
+        //     function renderFrame() {
+        //         // Only process if video is playing and has dimensions
+        //         if (video.paused || video.ended || !video.videoWidth) {
+        //             requestAnimationFrame(renderFrame);
+        //             return;
+        //         }
                 
-                // Clear canvas with transparent background
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+        //         // Clear canvas with transparent background
+        //         ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
-                // Draw the current video frame onto the canvas
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        //         // Draw the current video frame onto the canvas
+        //         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 
-                // Extract pixel data and apply transparency to green pixels
-                const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const pixels = frame.data;
+        //         // Extract pixel data and apply transparency to green pixels
+        //         const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        //         const pixels = frame.data;
                 
-                // Enhanced green screen removal with edge handling
-                for (let i = 0; i < pixels.length; i += 4) {
-                    const r = pixels[i];
-                    const g = pixels[i + 1];
-                    const b = pixels[i + 2];
+        //         // Enhanced green screen removal with edge handling
+        //         for (let i = 0; i < pixels.length; i += 4) {
+        //             const r = pixels[i];
+        //             const g = pixels[i + 1];
+        //             const b = pixels[i + 2];
                     
-                    // Calculate how "green" the pixel is compared to other channels
-                    const greenDominance = g / (r + b + 0.1); // Avoid division by zero
-                    const colorDistance = Math.sqrt(
-                        Math.pow(r - 0, 2) + 
-                        Math.pow(g - 255, 2) + 
-                        Math.pow(b - 155, 2)
-                    );
+        //             // Calculate how "green" the pixel is compared to other channels
+        //             const greenDominance = g / (r + b + 0.1); // Avoid division by zero
+        //             const colorDistance = Math.sqrt(
+        //                 Math.pow(r - 0, 2) + 
+        //                 Math.pow(g - 255, 2) + 
+        //                 Math.pow(b - 155, 2)
+        //             );
                     
-                    // Check if the pixel is part of the greenscreen
-                    const isFullGreen = Math.abs(r - 0) < 60 && 
-                                        Math.abs(g - 255) < 60 && 
-                                        Math.abs(b - 155) < 60;
+        //             // Check if the pixel is part of the greenscreen
+        //             const isFullGreen = Math.abs(r - 0) < 60 && 
+        //                                 Math.abs(g - 255) < 60 && 
+        //                                 Math.abs(b - 155) < 60;
                     
-                    // Check if it's a green edge/spill (partial green with similar pattern)
-                    const isGreenEdge = colorDistance < 180 && greenDominance > 1.2;
+        //             // Check if it's a green edge/spill (partial green with similar pattern)
+        //             const isGreenEdge = colorDistance < 180 && greenDominance > 1.2;
                     
-                    if (isFullGreen || isGreenEdge) {
-                        // Make pixel transparent so background shows through
-                        pixels[i + 3] = 0; // Set alpha to 0 (transparent)
-                    }
-                }
+        //             if (isFullGreen || isGreenEdge) {
+        //                 // Make pixel transparent so background shows through
+        //                 pixels[i + 3] = 0; // Set alpha to 0 (transparent)
+        //             }
+        //         }
                 
-                // Put the processed image data back
-                ctx.putImageData(frame, 0, 0);
+        //         // Put the processed image data back
+        //         ctx.putImageData(frame, 0, 0);
                 
-                // Continue processing frames
-                requestAnimationFrame(renderFrame);
-            }
+        //         // Continue processing frames
+        //         requestAnimationFrame(renderFrame);
+        //     }
             
-            // Start the rendering loop
-            renderFrame();
-        }
+        //     // Start the rendering loop
+        //     renderFrame();
+        // }
         
         // Handle errors
         function handleError(error) {
@@ -588,12 +628,12 @@
             }
         }
         
-        // Reset card back after 5 seconds
-        function resetCardBack() {
-            setTimeout(() => {
-                cardImage.src = CARD_BACK_URL;
-            }, 5000);
-        }
+        // // Reset card back after 5 seconds
+        // function resetCardBack() {
+        //     setTimeout(() => {
+        //         cardImage.src = CARD_BACK_URL;
+        //     }, 5000);
+        // }
         
         // Check for existing participant
         function checkForExistingParticipant() {
@@ -607,6 +647,7 @@
             if (existingParticipant) {
                 console.log(`Existing participant found: ${existingParticipant.user_id}`);
                 showStatus(`Participant found: ${existingParticipant.user_name || 'Unknown'}`);
+                chatContainer.style.display = 'block'
 
                 // Subscribe to the participant's video and audio tracks
                 if (existingParticipant.tracks.video.state === 'playable') {
@@ -660,6 +701,15 @@
             if (message.message_type === 'conversation' && message.event_type === 'conversation.utterance' && 
                 message.properties?.role === 'user') {
                 console.log('User said:', message.properties.speech);
+
+                const sttElement = document.getElementById('stt');
+                if (sttElement) {
+                    sttElement.textContent = `${message.properties.speech}`;
+                }
+
+                if (message.properties.speech == "Hello!") {
+                    chatMasterContainer.textContent = 'Hello! Why don\'t you try to roll a dice?';
+                }
             }
             
             // Only process tool call events
@@ -688,7 +738,9 @@
                             randomNumber = Math.floor(Math.random() * 4) + 1;
                         }
                         
-                        alert('You roll a ' + side.toLowerCase() + ' sided dice, and you got : ' + randomNumber);
+                        // alert('You roll a ' + side.toLowerCase() + ' sided dice, and you got : ' + randomNumber);
+                        chatMasterContainer.textContent = 'You roll a ' + side.toLowerCase() + ' sided dice, and you got ' + randomNumber + ".";
+                        
 
                         const responseMessage = {
                             message_type: "conversation",
